@@ -54,7 +54,16 @@ class Value:
         other = other if isinstance(other, Value) else Value(other)
         return self * other**-1
     
+    def __pow__(self, other): # self ** other
+        assert isinstance(other, (int, float)), "only supporting int/float powers for now"
+        out = Value(self.data**other, (self,), f'**{other}')
 
+        def _backward():
+            self.grad += (other * self.data**(other - 1)) * out.grad
+        out._backward = _backward
+
+        return out
+    
     def tanh(self): # hyperbolic tangent activation function
         x = self.data
         t = (2 / (1 + (-2 * x).exp())) - 1
